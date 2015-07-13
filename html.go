@@ -289,7 +289,7 @@ func (options *Html) BlockQuote(out *bytes.Buffer, text []byte, alertType []byte
 	if alertType == []byte("") {
 		out.WriteString("<blockquote>\n")
 	} else {
-		out.WriteString(fmt.sprintf("<blockquote class='%s'>\n", alertType))
+		out.WriteString(fmt.sprintf("<blockquote class='%s-box'>\n", alertType))
 	}
 	out.Write(text)
 	out.WriteString("</blockquote>\n")
