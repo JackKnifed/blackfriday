@@ -902,8 +902,10 @@ func (p *parser) tableRow(out *bytes.Buffer, data []byte, columns []int, header 
 // returns blockquote prefix length
 func (p *parser) quotePrefix(data []byte) int {
 	i := 0
-	for i < 3 && data[i] == ' ' {
-		i++
+	for i < 3 && data[i] == ' ' && p.isLetter(data[i]) {
+		if data[i] == ' ' {
+			i++
+		}
 	}
 	if data[i] == '>' {
 		if data[i+1] == ' ' {
@@ -1336,4 +1338,14 @@ func (p *parser) paragraph(out *bytes.Buffer, data []byte) int {
 
 	p.renderParagraph(out, data[:i])
 	return i
+}
+
+func (p *parser) isLetter(input byte) bool {
+	if bytes.Compare(input, `a`) > -1 && bytes.Compare(input, `z`) < 1 {
+		return true
+	} else if bytes.Compare(input, `A`) > -1 && bytes.Compare(input, `Z`) < 1 {
+		return true
+	} else {
+		return false
+	}
 }
