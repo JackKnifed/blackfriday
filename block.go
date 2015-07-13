@@ -902,8 +902,14 @@ func (p *parser) tableRow(out *bytes.Buffer, data []byte, columns []int, header 
 // returns blockquote prefix length
 func (p *parser) quotePrefix(data []byte) int {
 	i := 0
-	for i < 3 && data[i] == ' ' && p.isLetter(data[i]) {
-		if data[i] == ' ' {
+	if p.flags&EXTENSION_ALERT_BOXES != 0 {
+		for i < 3 && data[i] == ' ' && p.isUSLetter(data[i]) {
+			if data[i] == ' ' {
+				i++
+			}
+		}
+	} else {
+		for i < 3 && data[i] == ' ' {
 			i++
 		}
 	}
@@ -919,15 +925,24 @@ func (p *parser) quotePrefix(data []byte) int {
 // parse a blockquote fragment
 func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 	var raw bytes.Buffer
+	alertType := []byte("")
 	beg, end := 0, 0
 	for beg < len(data) {
 		end = beg
+		// advance the end to the new line, then one byte further (so it eats a full line)
 		for data[end] != '\n' {
 			end++
 		}
 		end++
 
 		if pre := p.quotePrefix(data[beg:]); pre > 0 {
+			if alertType != []byte("") && p.flags&EXTENSION_ALERT_BOXES {
+				// rip the alertType from the block
+				alertType = bytes.TrimSpace(data[:beg])
+				alertType = bytes.TrimRight(alertType, ">")
+				alertType = bytes.TrimSpace(alertType)
+			}
+
 			// skip the prefix
 			beg += pre
 		} else if p.isEmpty(data[beg:]) > 0 &&
@@ -935,6 +950,7 @@ func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 				(p.quotePrefix(data[end:]) == 0 && p.isEmpty(data[end:]) == 0)) {
 			// blockquote ends with at least one blank line
 			// followed by something without a blockquote prefix
+			// so skip this line and go onto the next
 			break
 		}
 
@@ -945,7 +961,7 @@ func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 
 	var cooked bytes.Buffer
 	p.block(&cooked, raw.Bytes())
-	p.r.BlockQuote(out, cooked.Bytes())
+	p.r.BlockQuote(out, cooked.Bytes(), alertType)
 	return end
 }
 
@@ -1340,7 +1356,7 @@ func (p *parser) paragraph(out *bytes.Buffer, data []byte) int {
 	return i
 }
 
-func (p *parser) isLetter(input byte) bool {
+func (p *parser) isUSLetter(input byte) bool {
 	if bytes.Compare(input, `a`) > -1 && bytes.Compare(input, `z`) < 1 {
 		return true
 	} else if bytes.Compare(input, `A`) > -1 && bytes.Compare(input, `Z`) < 1 {
