@@ -288,13 +288,11 @@ func (options *Html) BlockQuote(out *bytes.Buffer, text []byte, alertType []byte
 	doubleSpace(out)
 	if alertType == []byte("") {
 		out.WriteString("<blockquote>\n")
-		out.Write(text)
-		out.WriteString("</blockquote>\n")
 	} else {
 		out.WriteString(fmt.sprintf("<blockquote class='%s'>\n", alertType))
-		out.Write(text)
-		out.WriteString("</blockquote>\n")
 	}
+	out.Write(text)
+	out.WriteString("</blockquote>\n")
 }
 
 func (options *Html) Table(out *bytes.Buffer, header []byte, body []byte, columnData []int) {
