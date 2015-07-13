@@ -284,12 +284,12 @@ func (options *Html) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 	out.WriteString("</code></pre>\n")
 }
 
-func (options *Html) BlockQuote(out *bytes.Buffer, text []byte, alertType []byte) {
+func (options *Html) BlockQuote(out *bytes.Buffer, text, alertType []byte) {
 	doubleSpace(out)
-	if alertType == []byte("") {
+	if alertType == nil {
 		out.WriteString("<blockquote>\n")
 	} else {
-		out.WriteString(fmt.sprintf("<blockquote class='%s-box'>\n", alertType))
+		out.WriteString(fmt.Sprintf("<blockquote class='%s-box'>\n", alertType))
 	}
 	out.Write(text)
 	out.WriteString("</blockquote>\n")

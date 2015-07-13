@@ -903,7 +903,7 @@ func (p *parser) tableRow(out *bytes.Buffer, data []byte, columns []int, header 
 func (p *parser) quotePrefix(data []byte) int {
 	i := 0
 	if p.flags&EXTENSION_ALERT_BOXES != 0 {
-		for i < 3 && data[i] == ' ' && p.isUSLetter(data[i]) {
+		for i < 3 && data[i] == ' ' && p.isUSLetter(data[i:i+1]) {
 			if data[i] == ' ' {
 				i++
 			}
@@ -936,7 +936,7 @@ func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 		end++
 
 		if pre := p.quotePrefix(data[beg:]); pre > 0 {
-			if alertType != []byte("") && p.flags&EXTENSION_ALERT_BOXES {
+			if alertType == nil && p.flags&EXTENSION_ALERT_BOXES != 0 {
 				// rip the alertType from the block
 				alertType = bytes.TrimSpace(data[:beg])
 				alertType = bytes.TrimRight(alertType, ">")
@@ -1356,10 +1356,10 @@ func (p *parser) paragraph(out *bytes.Buffer, data []byte) int {
 	return i
 }
 
-func (p *parser) isUSLetter(input byte) bool {
-	if bytes.Compare(input, `a`) > -1 && bytes.Compare(input, `z`) < 1 {
+func (p *parser) isUSLetter(input []byte) bool {
+	if bytes.Compare(input, []byte("a")) > -1 && bytes.Compare(input, []byte("z")) < 1 {
 		return true
-	} else if bytes.Compare(input, `A`) > -1 && bytes.Compare(input, `Z`) < 1 {
+	} else if bytes.Compare(input, []byte("A")) > -1 && bytes.Compare(input, []byte("Z")) < 1 {
 		return true
 	} else {
 		return false

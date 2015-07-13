@@ -150,7 +150,7 @@ var blockTags = map[string]bool{
 type Renderer interface {
 	// block-level callbacks
 	BlockCode(out *bytes.Buffer, text []byte, lang string)
-	BlockQuote(out *bytes.Buffer, text []byte)
+	BlockQuote(out *bytes.Buffer, text, alertType []byte )
 	BlockHtml(out *bytes.Buffer, text []byte)
 	Header(out *bytes.Buffer, text func() bool, level int, id string)
 	HRule(out *bytes.Buffer)
