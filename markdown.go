@@ -42,6 +42,7 @@ const (
 	EXTENSION_HEADER_IDS                             // specify header IDs  with {#id}
 	EXTENSION_TITLEBLOCK                             // Titleblock ala pandoc
 	EXTENSION_AUTO_HEADER_IDS                        // Create the header ID from the text
+	EXTENSION_ALERT_BOXES                            // Create Alert boxes when encountered
 
 	commonHtmlFlags = 0 |
 		HTML_USE_XHTML |
