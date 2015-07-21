@@ -942,11 +942,11 @@ func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 		}
 		end++
 
-		pre, _ := p.quotePrefix(data[beg:])
+		pre, tempAlertType := p.quotePrefix(data[beg:])
 		// this line is part of the blockquote so write it out
 		raw.Write(data[beg+pre:end])
 		if len(alertType) == 0  {
-			_, alertType = p.quotePrefix(data[beg:])
+			alertType = tempAlertType
 		}
 
 		if p.isEmpty(data[end:]) > 0 && end >= len(data) {
