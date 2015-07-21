@@ -906,24 +906,30 @@ func (p *parser) tableRow(out *bytes.Buffer, data []byte, columns []int, header 
 func (p *parser) quotePrefix(data []byte) (int, []byte) {
 	i := 0
 	var alertType []byte
-	// skip any us characters
-	for i < len(data) && isUSLetter(data[i]) {
-		alertType = append(alertType, data[i])
+	// skip any spaces
+	for i < len(data) + 1 && i < 3 && data[i] == ' ' {
 		i++
 	}
-	// if we didn't skip any characters, then skip up to 3 spaces
-	if i == 0 {
-		for i < 3 && data[i] == ' ' {
+	if p.flags&EXTENSION_ALERT_BOXES != 0 {
+		// skip any us characters
+		for i < len(data) + 1 && isUSLetter(data[i]) {
+			alertType = append(alertType, data[i])
+			i++
+		}
+		// skip up to 3 spaces again
+		for i < len(data) + 1 && i < 3 && data[i] == ' ' {
 			i++
 		}
 	}
-	if i < len(data) && data[i] == '>' {
-		if data[i+1] == ' ' {
+	if data[i] == '>' {
+		if i < len(data) + 3 && data[i+1] == ' ' {
 			return i + 2, alertType
+		} else {
+			return i + 1, alertType
 		}
-		return i + 1, alertType
+	} else {
+		return 0, []byte("")
 	}
-	return 0, alertType
 }
 
 // parse a blockquote fragment

@@ -89,7 +89,78 @@ func TestIsUSLetter(t *testing.T) {
 			t.Errorf("\nInput [%#v] was not marked as a letter\n", notLetters[i])
 		}
 	}
+}
 
+func TestIsPrefix(t *testing.T) {
+	p := new(parser)
+	p.flags = 0
+
+	var testdata = []struct{
+		input string
+		expectedPrefixLength int
+		expectedAlertType string
+	}{
+		{"> regular quote", 2, ""},
+		{">another regular quote", 1, ""},
+		{" >same deal", 2, ""},
+		{"   > dis p kewl", 5, ""},
+		{"   >still should be regular quote", 4, ""},
+		{"    > codeblock acksul", 0, ""},
+		{"test>", 0, ""},
+		{"test> with some text", 0, ""},
+		{"test>with no space", 0, ""},
+		{"test > this should work idk", 0, ""},
+		{"   test> this should be good", 0, ""},
+		{"   test>yeah dis 2", 0, ""},
+		{" trying bad block> really should not work", 0, ""},
+		{" test-> that character should break this", 0, ""},
+	}
+
+	for _, testItem := range testdata {
+		actualPrefixLength, bytesAlertType := p.quotePrefix([]byte(testItem.input))
+		if testItem.expectedPrefixLength != actualPrefixLength {
+			t.Errorf("\nInput [%#v]\nExpected [%#v]\nActual [%#v]\n", testItem.input, testItem.expectedPrefixLength, actualPrefixLength)
+		}
+		if testItem.expectedAlertType != string(bytesAlertType) {
+			t.Errorf("\nInput [%#v]\nExpected [%#v]\nActual [%#v]\n", testItem.input, testItem.expectedAlertType, bytesAlertType)
+		}
+	}
+}
+
+func TestIsPrefixW_WITH_ALERT_BOX(t *testing.T) {
+	p := new(parser)
+	p.flags = EXTENSION_ALERT_BOXES
+
+	var testdata = []struct{
+		input string
+		expectedPrefixLength int
+		expectedAlertType string
+	}{
+		{"> regular quote", 2, ""},
+		{">another regular quote", 1, ""},
+		{" >same deal", 2, ""},
+		{"   > dis p kewl", 5, ""},
+		{"   >still should be regular quote", 4, ""},
+		{"    > codeblock acksul", 0, ""},
+		{"test>", 5, "test"},
+		{"test> with some text", 6, "test"},
+		{"test>with no space", 5, "test"},
+		{"test > this should work idk", 7, "test"},
+		{"   test> this should be good", 9, "test"},
+		{"   test>yeah dis 2", 8, "test"},
+		{" trying bad block> really should not work", 0, ""},
+		{" test-> that character should break this", 0, ""},
+	}
+
+	for _, testItem := range testdata {
+		actualPrefixLength, bytesAlertType := p.quotePrefix([]byte(testItem.input))
+		if testItem.expectedPrefixLength != actualPrefixLength {
+			t.Errorf("\nInput [%#v]\nExpected [%#v]\nActual [%#v]\n", testItem.input, testItem.expectedPrefixLength, actualPrefixLength)
+		}
+		if testItem.expectedAlertType != string(bytesAlertType) {
+			t.Errorf("\nInput [%#v]\nExpected [%#v]\nActual [%#v]\n", testItem.input, testItem.expectedAlertType, bytesAlertType)
+		}
+	}
 }
 
 func TestPrefixHeaderNoExtensions(t *testing.T) {
@@ -1310,3 +1381,4 @@ func TestTitleBlock_EXTENSION_TITLEBLOCK(t *testing.T) {
 	doTestsBlock(t, tests, EXTENSION_TITLEBLOCK)
 
 }
+
