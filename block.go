@@ -128,7 +128,7 @@ func (p *parser) block(out *bytes.Buffer, data []byte) {
 		//
 		// > A big quote I found somewhere
 		// > on the web
-		if p.quotePrefix(data) > 0 {
+		if prefixCount, _ := p.quotePrefix(data); prefixCount > 0 {
 			data = data[p.quote(out, data):]
 			continue
 		}
@@ -507,6 +507,9 @@ func (p *parser) htmlFindEnd(tag string, data []byte) int {
 	return i + skip
 }
 
+// Determines if the current line in a buffer is Empty
+// Returns 0 if the next line is not empty (contains something other than ' ' and \t)
+// Otherwise, returns the number of characters that make up the next line in the buffer
 func (p *parser) isEmpty(data []byte) int {
 	// it is okay to call isEmpty on an empty buffer
 	if len(data) == 0 {
@@ -900,11 +903,12 @@ func (p *parser) tableRow(out *bytes.Buffer, data []byte, columns []int, header 
 }
 
 // returns blockquote prefix length
-func (p *parser) quotePrefix(data []byte) int {
+func (p *parser) quotePrefix(data []byte) (int, []byte) {
 	i := 0
+	var alertType []byte
 	// skip any us characters
-	for p.isUSLetter(data[i:i+1]) {
-
+	for i < len(data) && isUSLetter(data[i]) {
+		alertType = append(alertType, data[i])
 		i++
 	}
 	// if we didn't skip any characters, then skip up to 3 spaces
@@ -913,50 +917,52 @@ func (p *parser) quotePrefix(data []byte) int {
 			i++
 		}
 	}
-	if data[i] == '>' {
+	if i < len(data) && data[i] == '>' {
 		if data[i+1] == ' ' {
-			return i + 2
+			return i + 2, alertType
 		}
-		return i + 1
+		return i + 1, alertType
 	}
-	return 0
+	return 0, alertType
 }
 
 // parse a blockquote fragment
 func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 	var raw bytes.Buffer
-	alertType := []byte("")
+	var alertType []byte
 	beg, end := 0, 0
-	for beg < len(data) {
+	keepGoing := true
+
+	for beg < len(data) && keepGoing {
+		// eat a whole line
 		end = beg
-		// advance the end to the new line, then one byte further (so it eats a full line)
-		for data[end] != '\n' {
+		for len(data) < end && data[end] != '\n' {
 			end++
 		}
 		end++
 
-		if pre := p.quotePrefix(data[beg:]); pre > 0 {
-			if len(alertType) > 0 && p.flags&EXTENSION_ALERT_BOXES != 0 {
-				// rip the alertType from the block
-				alertType = bytes.TrimSpace(data[:beg])
-				alertType = bytes.TrimRight(alertType, ">")
-				alertType = bytes.TrimSpace(alertType)
-			}
-
-			// skip the prefix
-			beg += pre
-		} else if p.isEmpty(data[beg:]) > 0 &&
-			(end >= len(data) ||
-				(p.quotePrefix(data[end:]) == 0 && p.isEmpty(data[end:]) == 0)) {
-			// blockquote ends with at least one blank line
-			// followed by something without a blockquote prefix
-			// so skip this line and go onto the next
-			break
+		pre, _ := p.quotePrefix(data[beg:])
+		// this line is part of the blockquote so write it out
+		raw.Write(data[beg+pre:end])
+		if len(alertType) == 0  {
+			_, alertType = p.quotePrefix(data[beg:])
 		}
 
-		// this line is part of the blockquote
-		raw.Write(data[beg:end])
-		beg = end
+		if p.isEmpty(data[end:]) > 0 && end >= len(data) {
+			// skip the next line if it's blank
+			end += p.isEmpty(data[end:])
+		}
+
+		if nextPrefixLength, nextLineType := p.quotePrefix(data[end:]); nextPrefixLength == 0 {
+			// If the next line is not a prefix, we're done
+			keepGoing = false
+		} else if bytes.Compare(nextLineType, alertType) != 0 {
+			// if the next line isn't of the same alert type, we're done
+			keepGoing = false
+		} else {
+			// Otherwise - we want to keep everything we just chomped off
+			beg = end
+		}
 	}
 
 	var cooked bytes.Buffer
@@ -1336,9 +1342,10 @@ func (p *parser) paragraph(out *bytes.Buffer, data []byte) int {
 
 		// if there's a list after this, paragraph is over
 		if p.flags&EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK != 0 {
+			quotePrefixCheck, _ := p.quotePrefix(current)
 			if p.uliPrefix(current) != 0 ||
 				p.oliPrefix(current) != 0 ||
-				p.quotePrefix(current) != 0 ||
+				quotePrefixCheck != 0 ||
 				p.codePrefix(current) != 0 {
 				p.renderParagraph(out, data[:i])
 				return i
@@ -1356,12 +1363,21 @@ func (p *parser) paragraph(out *bytes.Buffer, data []byte) int {
 	return i
 }
 
-func (p *parser) isUSLetter(input []byte) bool {
-	if bytes.Compare(input, []byte("a")) >= 0 && bytes.Compare(input, []byte("z")) <= 0 {
+func isUSLetter(input byte) bool {
+	lowerCaseRange := []byte{'a', 'z'}
+	upperCaseRange := []byte{'A', 'Z'}
+	if input >= lowerCaseRange[0] && input <= lowerCaseRange[1] {
 		return true
-	} else if bytes.Compare(input, []byte("A")) >= 0 && bytes.Compare(input, []byte("Z")) <= 0 {
+	} else if input >= upperCaseRange[0] && input <= upperCaseRange[1] {
 		return true
 	} else {
 		return false
 	}
+	// if bytes.Compare(input, []byte("a")) >= 0 && bytes.Compare(input, []byte("z")) <= 0 {
+	// 	return true
+	// } else if bytes.Compare(input, []byte("A")) >= 0 && bytes.Compare(input, []byte("Z")) <= 0 {
+	// 	return true
+	// } else {
+	// 	return false
+	// }
 }

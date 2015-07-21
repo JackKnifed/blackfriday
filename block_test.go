@@ -76,6 +76,22 @@ func doTestsBlockWithRunner(t *testing.T, tests []string, extensions int, runner
 	}
 }
 
+func TestIsUSLetter(t *testing.T) {
+	areLetters := []byte{'a', 'b', 'c', 'x', 'y', 'z', 'A', 'B', 'C', 'X', 'Y', 'Z'}
+	notLetters := []byte{'`','_', '[', '^', '@', '>', '?', '{', '|', '}'}
+	for i := 0; i< len(areLetters); i++ {
+		if !isUSLetter(areLetters[i]) {
+			t.Errorf("\nInput [%#v] was not marked as a letter\n", areLetters[i])
+		}
+	}
+	for i := 0; i< len(notLetters); i++ {
+		if isUSLetter(notLetters[i]) {
+			t.Errorf("\nInput [%#v] was not marked as a letter\n", notLetters[i])
+		}
+	}
+
+}
+
 func TestPrefixHeaderNoExtensions(t *testing.T) {
 	var tests = []string{
 		"# Header 1\n",
