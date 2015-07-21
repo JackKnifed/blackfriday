@@ -907,22 +907,18 @@ func (p *parser) quotePrefix(data []byte) (int, []byte) {
 	i := 0
 	var alertType []byte
 	// skip any spaces
-	for i < len(data) + 1 && i < 3 && data[i] == ' ' {
+	for i < len(data) - 1 && i < 3 && data[i] == ' ' {
 		i++
 	}
 	if p.flags&EXTENSION_ALERT_BOXES != 0 {
 		// skip any us characters
-		for i < len(data) + 1 && isUSLetter(data[i]) {
+		for i < len(data) - 1 && isUSLetter(data[i]) {
 			alertType = append(alertType, data[i])
 			i++
 		}
-		// skip up to 3 spaces again
-		for i < len(data) + 1 && i < 3 && data[i] == ' ' {
-			i++
-		}
 	}
-	if data[i] == '>' {
-		if i < len(data) + 3 && data[i+1] == ' ' {
+	if i < len(data) && data[i] == '>' {
+		if i < len(data) - 2 && data[i+1] == ' ' {
 			return i + 2, alertType
 		} else {
 			return i + 1, alertType
@@ -937,7 +933,6 @@ func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 	var raw bytes.Buffer
 	var alertType []byte
 	beg, end := 0, 0
-	keepGoing := true
 
 	for beg < len(data) && keepGoing {
 		// eat a whole line
@@ -961,10 +956,10 @@ func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 
 		if nextPrefixLength, nextLineType := p.quotePrefix(data[end:]); nextPrefixLength == 0 {
 			// If the next line is not a prefix, we're done
-			keepGoing = false
+			break
 		} else if bytes.Compare(nextLineType, alertType) != 0 {
 			// if the next line isn't of the same alert type, we're done
-			keepGoing = false
+			break
 		} else {
 			// Otherwise - we want to keep everything we just chomped off
 			beg = end
