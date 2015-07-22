@@ -934,7 +934,7 @@ func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 	var alertType []byte
 	beg, end := 0, 0
 
-	for beg < len(data) && keepGoing {
+	for beg < len(data) {
 		// eat a whole line
 		end = beg
 		for len(data) < end && data[end] != '\n' {
@@ -944,14 +944,13 @@ func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 
 		pre, tempAlertType := p.quotePrefix(data[beg:])
 		// this line is part of the blockquote so write it out
-		raw.Write(data[beg+pre:end])
-		if len(alertType) == 0  {
-			_ alertType = tempAlertType
-		}
 
 		if p.isEmpty(data[end:]) > 0 && end >= len(data) {
 			// skip the next line if it's blank
 			end += p.isEmpty(data[end:])
+			if len(alertType) == 0  {
+				alertType = tempAlertType
+			}
 		}
 
 		if nextPrefixLength, nextLineType := p.quotePrefix(data[end:]); nextPrefixLength == 0 {
@@ -962,6 +961,7 @@ func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 			break
 		} else {
 			// Otherwise - we want to keep everything we just chomped off
+			raw.Write(data[beg+pre:end])
 			beg = end
 		}
 	}

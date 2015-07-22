@@ -91,7 +91,7 @@ func TestIsUSLetter(t *testing.T) {
 	}
 }
 
-func TestIsPrefix(t *testing.T) {
+func TestQuotePrefix(t *testing.T) {
 	p := new(parser)
 	p.flags = 0
 
@@ -127,7 +127,7 @@ func TestIsPrefix(t *testing.T) {
 	}
 }
 
-func TestIsPrefixW_WITH_ALERT_BOX(t *testing.T) {
+func TestQuotePrefix_WITH_ALERT_BOX(t *testing.T) {
 	p := new(parser)
 	p.flags = EXTENSION_ALERT_BOXES
 
@@ -145,7 +145,7 @@ func TestIsPrefixW_WITH_ALERT_BOX(t *testing.T) {
 		{"test>", 5, "test"},
 		{"test> with some text", 6, "test"},
 		{"test>with no space", 5, "test"},
-		{"test > this should work idk", 7, "test"},
+		{"test > this should work idk", 0, ""},
 		{"   test> this should be good", 9, "test"},
 		{"   test>yeah dis 2", 8, "test"},
 		{" trying bad block> really should not work", 0, ""},
