@@ -931,45 +931,62 @@ func (p *parser) quotePrefix(data []byte) (int, []byte) {
 // parse a blockquote fragment
 func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 	var raw bytes.Buffer
-	var alertType []byte
-	beg, end := 0, 0
+	processed, endOfLine := 0, 0
 
-	for beg < len(data) {
+	_, alertType := p.quotePrefix(data)
+
+	for processed < len(data) {
 		// eat a whole line
-		end = beg
-		for len(data) < end && data[end] != '\n' {
-			end++
+		endOfLine = processed
+		for endOfLine < len(data) && data[endOfLine] != '\n' {
+			endOfLine++
 		}
-		end++
+		endOfLine++
 
-		pre, tempAlertType := p.quotePrefix(data[beg:])
+		currentPre, currentAlertType := p.quotePrefix(data[processed:])
 		// this line is part of the blockquote so write it out
 
-		if p.isEmpty(data[end:]) > 0 && end >= len(data) {
-			// skip the next line if it's blank
-			end += p.isEmpty(data[end:])
-			if len(alertType) == 0  {
-				alertType = tempAlertType
-			}
+		if currentPre > 0 && bytes.Compare(currentAlertType, alertType) == 0 {
+			raw.Write(data[processed+currentPre:endOfLine])
+			processed = endOfLine
+		} else {
+			// this should never happen due to look-ahead, but a safety check isn't bad
+			break
 		}
 
-		if nextPrefixLength, nextLineType := p.quotePrefix(data[end:]); nextPrefixLength == 0 {
-			// If the next line is not a prefix, we're done
+		// If the next line is blank, look at the line after
+		nextLine := p.isEmpty(data[endOfLine:])
+		nextLine += endOfLine
+
+		if nextLine >= len(data) {
+			// wee've reaches the endOfLine of this quote block
 			break
-		} else if bytes.Compare(nextLineType, alertType) != 0 {
-			// if the next line isn't of the same alert type, we're done
+		}
+
+		if p.isEmpty(data[nextLine:]) == 0{
+			// double blank line? break out of the quote block
 			break
-		} else {
-			// Otherwise - we want to keep everything we just chomped off
-			raw.Write(data[beg+pre:end])
-			beg = end
+		}
+		// there HAS to be something in the next line
+		nextPre, nextType := p.quotePrefix(data[nextLine:])
+		if nextPre == 0 {
+			// the next line isn't a quote line - abandon ship
+			break
+		} 
+		if bytes.Compare(nextType, alertType) != 0 {
+			// different type of quote block
+			break
+		} 
+		if nextLine != endOfLine {
+			raw.Write(data[processed:nextLine])
+			processed = nextLine
 		}
 	}
 
 	var cooked bytes.Buffer
 	p.block(&cooked, raw.Bytes())
 	p.r.BlockQuote(out, cooked.Bytes(), alertType)
-	return end
+	return processed
 }
 
 // returns prefix length for block code
