@@ -287,7 +287,7 @@ func (options *Html) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 
 func (options *Html) BlockQuote(out *bytes.Buffer, text, alertType []byte) {
 	doubleSpace(out)
-	if len(alertType) > 0 && options.flags&HTML_FOOTNOTE_RETURN_LINKS != 0 {
+	if len(alertType) > 0 && options.flags&HTML_ALERT_BOXES != 0 {
 		out.WriteString(fmt.Sprintf("<blockquote class='%s-box'>\n", alertType))
 	} else {
 		out.WriteString("<blockquote>\n")

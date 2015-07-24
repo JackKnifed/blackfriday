@@ -19,12 +19,12 @@ import (
 	"testing"
 )
 
-func runMarkdownReference(input string, flag int) string {
-	renderer := HtmlRenderer(0, "", "")
+func runMarkdownReference(input string, flag int, htmlFlags int) string {
+	renderer := HtmlRenderer(htmlFlags, "", "")
 	return string(Markdown([]byte(input), renderer, flag))
 }
 
-func doTestsReference(t *testing.T, files []string, flag int) {
+func doTestsReference(t *testing.T, files []string, flag int, htmlFlags int) {
 	// catch and report panics
 	var candidate string
 	defer func() {
@@ -51,7 +51,7 @@ func doTestsReference(t *testing.T, files []string, flag int) {
 		expected := string(expectedBytes)
 
 		// fmt.Fprintf(os.Stderr, "processing %s ...", filename)
-		actual := string(runMarkdownReference(input, flag))
+		actual := string(runMarkdownReference(input, flag, htmlFlags))
 		if actual != expected {
 			t.Errorf("\n    [%#v]\nInput    [%#v]\nExpected [%#v]\nActual   [%#v]",
 				basename+".text", input, expected, actual)
@@ -65,7 +65,7 @@ func doTestsReference(t *testing.T, files []string, flag int) {
 			for end := start + 1; end <= max; end++ {
 				candidate = input[start:end]
 				// fmt.Fprintf(os.Stderr, "  %s %d:%d/%d\n", filename, start, end, max)
-				_ = runMarkdownReference(candidate, flag)
+				_ = runMarkdownReference(candidate, flag, htmlFlags)
 			}
 		}
 	}
@@ -96,7 +96,7 @@ func TestReference(t *testing.T) {
 		"Tabs",
 		"Tidyness",
 	}
-	doTestsReference(t, files, 0)
+	doTestsReference(t, files, 0, 0)
 }
 
 func TestReference_EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK(t *testing.T) {
@@ -124,7 +124,7 @@ func TestReference_EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK(t *testing.T) {
 		"Tabs",
 		"Tidyness",
 	}
-	doTestsReference(t, files, EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK)
+	doTestsReference(t, files, EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK, 0)
 }
 
 func TestReference_EXTENSION_ALERT_BOXES(t *testing.T) {
@@ -153,5 +153,5 @@ func TestReference_EXTENSION_ALERT_BOXES(t *testing.T) {
 		"Tidyness",
 		"Alert-box BlockQuote",
 	}
-	doTestsReference(t, files, EXTENSION_ALERT_BOXES)
+	doTestsReference(t, files, EXTENSION_ALERT_BOXES, HTML_ALERT_BOXES)
 }
