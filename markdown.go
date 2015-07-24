@@ -45,6 +45,7 @@ const (
 	EXTENSION_AUTO_HEADER_IDS                        // Create the header ID from the text
 	EXTENSION_BACKSLASH_LINE_BREAK                   // translate trailing backslashes into line breaks
 	EXTENSION_DEFINITION_LISTS                       // render definition lists
+	EXTENSION_ALERT_BOXES                            // Create Alert boxes when encountered
 
 	commonHtmlFlags = 0 |
 		HTML_USE_XHTML |
@@ -156,7 +157,7 @@ var blockTags = map[string]bool{
 type Renderer interface {
 	// block-level callbacks
 	BlockCode(out *bytes.Buffer, text []byte, lang string)
-	BlockQuote(out *bytes.Buffer, text []byte)
+	BlockQuote(out *bytes.Buffer, text, alertType []byte )
 	BlockHtml(out *bytes.Buffer, text []byte)
 	Header(out *bytes.Buffer, text func() bool, level int, id string)
 	HRule(out *bytes.Buffer)

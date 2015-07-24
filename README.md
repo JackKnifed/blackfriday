@@ -196,6 +196,10 @@ implements the following extensions:
     becomes `<sup>4</sup>&frasl;<sub>5</sub>`, which renders as
     <sup>4</sup>&frasl;<sub>5</sub>.
 
+*		**Alert Boxes**  A quote with letters preceeding it is interperted
+    as an alert box. A line that contains `alert> This is an alert.`
+		will be output as an alert box, with `-box` appended.
+
 
 Other renderers
 ---------------

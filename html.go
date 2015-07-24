@@ -42,6 +42,7 @@ const (
 	HTML_SMARTYPANTS_LATEX_DASHES              // enable LaTeX-style dashes (with HTML_USE_SMARTYPANTS)
 	HTML_SMARTYPANTS_ANGLED_QUOTES             // enable angled double quotes (with HTML_USE_SMARTYPANTS) for double quotes rendering
 	HTML_FOOTNOTE_RETURN_LINKS                 // generate a link at the end of a footnote to return to the source
+	HTML_ALERT_BOXES                           // enable output of alert boxes
 )
 
 var (
@@ -284,9 +285,13 @@ func (options *Html) BlockCode(out *bytes.Buffer, text []byte, lang string) {
 	out.WriteString("</code></pre>\n")
 }
 
-func (options *Html) BlockQuote(out *bytes.Buffer, text []byte) {
+func (options *Html) BlockQuote(out *bytes.Buffer, text, alertType []byte) {
 	doubleSpace(out)
-	out.WriteString("<blockquote>\n")
+	if len(alertType) < 1 {
+		out.WriteString("<blockquote>\n")
+	} else {
+		out.WriteString(fmt.Sprintf("<blockquote class='%s-box'>\n", alertType))
+	}
 	out.Write(text)
 	out.WriteString("</blockquote>\n")
 }

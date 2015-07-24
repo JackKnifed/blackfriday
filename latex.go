@@ -59,10 +59,17 @@ func (options *Latex) TitleBlock(out *bytes.Buffer, text []byte) {
 
 }
 
-func (options *Latex) BlockQuote(out *bytes.Buffer, text []byte) {
-	out.WriteString("\n\\begin{quotation}\n")
-	out.Write(text)
-	out.WriteString("\n\\end{quotation}\n")
+func (options *Latex) BlockQuote(out *bytes.Buffer, text, alertType []byte) {
+	if alertType == nil {
+		out.WriteString("\n\\begin{quotation}\n")
+		out.Write(text)
+		out.WriteString("\n\\end{quotation}\n")
+	} else {
+		out.WriteString("\n\\begin{document}")
+		out.WriteString("\n\\colorbox{pink}{\\hbox to \\textwidth{alert box\\hfill}}")
+		out.Write(text)
+		out.WriteString("\n\\end{document}")
+	}
 }
 
 func (options *Latex) BlockHtml(out *bytes.Buffer, text []byte) {

@@ -53,8 +53,8 @@ func doTestsReference(t *testing.T, files []string, flag int) {
 		// fmt.Fprintf(os.Stderr, "processing %s ...", filename)
 		actual := string(runMarkdownReference(input, flag))
 		if actual != expected {
-			t.Errorf("\n    [%#v]\nExpected[%#v]\nActual  [%#v]",
-				basename+".text", expected, actual)
+			t.Errorf("\n    [%#v]\nInput    [%#v]\nExpected [%#v]\nActual   [%#v]",
+				basename+".text", input, expected, actual)
 		}
 		// fmt.Fprintf(os.Stderr, " ok\n")
 
@@ -125,4 +125,33 @@ func TestReference_EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK(t *testing.T) {
 		"Tidyness",
 	}
 	doTestsReference(t, files, EXTENSION_NO_EMPTY_LINE_BEFORE_BLOCK)
+}
+
+func TestReference_EXTENSION_ALERT_BOXES(t *testing.T) {
+	files := []string{
+		"Amps and angle encoding",
+		"Auto links",
+		"Backslash escapes",
+		"Blockquotes with code blocks",
+		"Code Blocks",
+		"Code Spans",
+		"Hard-wrapped paragraphs with list-like lines",
+		"Horizontal rules",
+		"Inline HTML (Advanced)",
+		"Inline HTML (Simple)",
+		"Inline HTML comments",
+		"Links, inline style",
+		"Links, reference style",
+		"Links, shortcut references",
+		"Literal quotes in titles",
+		"Markdown Documentation - Basics",
+		"Markdown Documentation - Syntax",
+		"Nested blockquotes",
+		"Ordered and unordered lists",
+		"Strong and em together",
+		"Tabs",
+		"Tidyness",
+		"Alert-box BlockQuote",
+	}
+	doTestsReference(t, files, EXTENSION_ALERT_BOXES)
 }
