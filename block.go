@@ -1445,11 +1445,4 @@ func isUSLetter(input byte) bool {
 	} else {
 		return false
 	}
-	// if bytes.Compare(input, []byte("a")) >= 0 && bytes.Compare(input, []byte("z")) <= 0 {
-	// 	return true
-	// } else if bytes.Compare(input, []byte("A")) >= 0 && bytes.Compare(input, []byte("Z")) <= 0 {
-	// 	return true
-	// } else {
-	// 	return false
-	// }
 }
