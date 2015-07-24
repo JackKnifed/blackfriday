@@ -1,4 +1,4 @@
-Blackfriday [![Build Status](https://travis-ci.org/JackKnifed/blackfriday.svg?branch=alert-box)](https://travis-ci.org/JackKnifed/blackfriday)
+Blackfriday [![Build Status](https://travis-ci.org/russross/blackfriday.svg?branch=master)](https://travis-ci.org/russross/blackfriday)
 ===========
 
 Blackfriday is a [Markdown][1] processor implemented in [Go][2]. It
@@ -195,6 +195,10 @@ implements the following extensions:
     cases like most smartypant processors). For example, `4/5`
     becomes `<sup>4</sup>&frasl;<sub>5</sub>`, which renders as
     <sup>4</sup>&frasl;<sub>5</sub>.
+
+*		**Alert Boxes**  A quote with letters preceeding it is interperted
+    as an alert box. A line that contains `alert> This is an alert.`
+		will be output as an alert box, with `-box` appended.
 
 
 Other renderers
