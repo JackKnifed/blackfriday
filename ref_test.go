@@ -152,6 +152,7 @@ func TestReference_EXTENSION_ALERT_BOXES(t *testing.T) {
 		"Tabs",
 		"Tidyness",
 		"Alert-box BlockQuote",
+		"Alert-box BlockQuote MultiLine",
 	}
 	doTestsReference(t, files, EXTENSION_ALERT_BOXES, HTML_ALERT_BOXES)
 }
