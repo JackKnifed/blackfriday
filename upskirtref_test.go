@@ -53,8 +53,8 @@ func doTestsReference(t *testing.T, files []string, flag int) {
 		// fmt.Fprintf(os.Stderr, "processing %s ...", filename)
 		actual := string(runMarkdownReference(input, flag))
 		if actual != expected {
-			t.Errorf("\n    [%#v]\nInput [%#v]\nExpected [%#v]\nActual [%#v]",
-				basename+".text", expected, actual)
+			t.Errorf("\n    [%#v]\nInput    [%#v]\nExpected [%#v]\nActual   [%#v]",
+				basename+".text", input, expected, actual)
 		}
 		// fmt.Fprintf(os.Stderr, " ok\n")
 

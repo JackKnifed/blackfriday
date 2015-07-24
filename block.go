@@ -954,19 +954,23 @@ func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 			break
 		}
 
-		// If the next line is blank, look at the line after
-		nextLine := p.isEmpty(data[endOfLine:])
-		nextLine += endOfLine
+		// eat as many blank lines as there are
+		nextLine := endOfLine
+		anotherEmptyLine := p.isEmpty(data[nextLine:]);
+		for anotherEmptyLine > 0 && nextLine + anotherEmptyLine < len(data) {
+			nextLine += anotherEmptyLine
+			anotherEmptyLine = p.isEmpty(data[nextLine:])
+		}
 
 		if nextLine >= len(data) {
 			// wee've reaches the endOfLine of this quote block
 			break
 		}
 
-		if p.isEmpty(data[nextLine:]) == 0{
-			// double blank line? break out of the quote block
-			break
-		}
+		// if p.isEmpty(data[nextLine:]) == 0{
+		// 	// double blank line? break out of the quote block
+		// 	break
+		// }
 		// there HAS to be something in the next line
 		nextPre, nextType := p.quotePrefix(data[nextLine:])
 		if nextPre == 0 {
@@ -978,7 +982,7 @@ func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 			break
 		} 
 		if nextLine != endOfLine {
-			raw.Write(data[processed:nextLine])
+			raw.Write([]byte("\n\n"))
 			processed = nextLine
 		}
 	}
