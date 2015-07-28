@@ -943,11 +943,8 @@ func (p *parser) quote(out *bytes.Buffer, data []byte) int {
 		if currentPre > 0 && bytes.Compare(currentAlertType, alertType) == 0 {
 			raw.Write(data[processed+currentPre:endOfLine])
 			processed = endOfLine
-		} else {
-			// this should never happen due to look-ahead, but a safety check isn't bad
-			break
-		}
-
+		} 
+		
 		// eat as many blank lines as there are
 		nextLine := endOfLine
 		anotherEmptyLine := p.isEmpty(data[nextLine:]);
