@@ -43,6 +43,7 @@ const (
 	HTML_SMARTYPANTS_ANGLED_QUOTES             // enable angled double quotes (with HTML_USE_SMARTYPANTS) for double quotes rendering
 	HTML_FOOTNOTE_RETURN_LINKS                 // generate a link at the end of a footnote to return to the source
 	HTML_ALERT_BOXES                           // enable output of alert boxes
+	HTML_FLAT_TOC                              // enable flat TOC (no nesting)
 )
 
 var (
@@ -87,6 +88,7 @@ type Html struct {
 	tocMarker    int
 	headerCount  int
 	currentLevel int
+	squashLevel  int
 	toc          *bytes.Buffer
 
 	// Track header IDs to prevent ID collision in a single generation.
@@ -119,6 +121,11 @@ func HtmlRendererWithParameters(flags int, title string,
 		closeTag = xhtmlClose
 	}
 
+	squashLevel := 6
+	if flags&HTML_FLAT_TOC != 0 {
+		squashLevel = 1
+	}
+
 	if renderParameters.FootnoteReturnLinkContents == "" {
 		renderParameters.FootnoteReturnLinkContents = `<sup>[return]</sup>`
 	}
@@ -133,6 +140,7 @@ func HtmlRendererWithParameters(flags int, title string,
 		headerCount:  0,
 		currentLevel: 0,
 		toc:          new(bytes.Buffer),
+		squashLevel:  squashLevel,
 
 		headerIDs: make(map[string]int),
 
@@ -756,7 +764,7 @@ func (options *Html) DocumentFooter(out *bytes.Buffer) {
 }
 
 func (options *Html) TocHeaderWithAnchor(text []byte, level int, anchor string) {
-	for level > options.currentLevel {
+	for level > options.currentLevel && options.currentLevel < options.squashLevel {
 		switch {
 		case bytes.HasSuffix(options.toc.Bytes(), []byte("</li>\n")):
 			// this sublist can nest underneath a header
@@ -773,7 +781,7 @@ func (options *Html) TocHeaderWithAnchor(text []byte, level int, anchor string) 
 		options.currentLevel++
 	}
 
-	for level < options.currentLevel {
+	for level < options.currentLevel && options.squashLevel < options.currentLevel {
 		options.toc.WriteString("</ul>")
 		if options.currentLevel > 1 {
 			options.toc.WriteString("</li>\n")
